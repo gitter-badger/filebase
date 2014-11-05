@@ -90,5 +90,9 @@ func (o *Object) Read(codec codec.Codec, out interface{}) (err error) {
 }
 
 func (o *Object) Destroy() error {
+
+	o.Lock()
+	defer o.Unlock()
+
 	return os.Remove(path.Join(o.location, o.key))
 }

@@ -21,8 +21,22 @@ type Collection struct {
 	collections map[string]*Collection
 }
 
-func (c *Collection) Ping(create bool) error {
-	return nil
+func newCollection(location string, name string, codec codec.Codec) *Collection {
+	collection := Collection{
+		location:    path.Join(location, name),
+		name:        name,
+		codec:       codec,
+		perm:        CollectionPerm,
+		collections: make(map[string]*Collection),
+		objects:     make(map[string]*Object),
+	}
+	if err := os.MkdirAll(collection.location, collection.perm); err != nil {
+		//Not returning error here makes chaining possible, but
+		//Panic needs proper recover!
+		panic(err)
+	}
+
+	return &collection
 }
 
 func (c *Collection) Name() string {
@@ -30,6 +44,7 @@ func (c *Collection) Name() string {
 }
 
 func (c *Collection) Destroy(force bool) error {
+
 	if force {
 		return os.RemoveAll(c.location)
 	}
@@ -37,34 +52,14 @@ func (c *Collection) Destroy(force bool) error {
 
 }
 
-func (c *Collection) New() error {
-	if c.objects == nil {
-		c.objects = make(map[string]*Object)
-		return os.MkdirAll(c.location, c.perm)
-	}
-	//We have objects, so the directory should be there already.
-	return nil
-}
-
 func (c *Collection) Collection(name string) *Collection {
 
 	collection, ok := c.collections[name]
 
 	if !ok {
-		c.collections[name] = &Collection{
-			location:    path.Join(c.location, name),
-			codec:       c.codec,
-			name:        name,
-			perm:        CollectionPerm,
-			collections: make(map[string]*Collection),
-		}
+		c.collections[name] = newCollection(c.location, name, c.codec)
 		collection = c.collections[name]
-		//Not returning error here makes chaining possible, but
-		//Panic needs proper recovering!
-		err := collection.New()
-		if err != nil {
-			panic(err)
-		}
+
 	}
 	return collection
 }
@@ -73,11 +68,6 @@ func (c *Collection) Put(key string, data interface{}, unique bool, sync bool) e
 
 	if c.location == "" {
 		return ErrorLocationEmpty
-	}
-
-	err := c.New()
-	if err != nil {
-		return err
 	}
 
 	object, ok := c.objects[key]

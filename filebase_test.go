@@ -2,9 +2,9 @@ package filebase
 
 import (
 	"encoding/gob"
+	"log"
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/omeid/filebase/codec"
 )
@@ -46,26 +46,27 @@ var (
 	}
 )
 
-func TestWrite(t *testing.T) {
+func TestAll(t *testing.T) {
 
 	gob.Register(TestObject{})
 
 	for _, codec := range []codec.Codec{codec.JSON{}, codec.YAML{}, codec.GOB{}} {
-		fb := New(TestDB, codec)
 		codec_name := reflect.TypeOf(codec).Name()
+		log.Printf("Testing Codec: %s", codec_name)
 
-		var (
-			c  = fb.Collection(codec_name)
-			c1 = c.Collection("child")
-			c2 = c1.Collection("grandchild")
-			c3 = c2.Collection("greatgrandchild")
-		)
+		C := New(TestDB, codec)
 
-		for _, c := range []*Collection{c1, c2, c3} {
+		c := C
+		for _, name := range []string{codec_name, "child", "grandchild", "greatgrandchild"} {
+
+			c = c.Collection(name)
+
+			log.Printf("\tTesting Collection %s", c.Name())
+
 			for _, key := range TestKeys {
 
 				o.Key = key
-				o.Collection = c.Name()
+				o.Collection = name
 
 				c.Put(key, o, false, false)
 				r := TestObject{}
@@ -85,16 +86,17 @@ func TestWrite(t *testing.T) {
 					t.Fatalf("\nCollec:        %s\nCodec:   %s\n\nQuery:    [%+v]\nExpected: %+v, \nGot:      %+v", c.Name(), codec_name, query, expected, keys)
 				}
 			}
+			log.Printf("\tDestroying %s.", c.Name())
 			err := c.Destroy(true)
-			time.Sleep(1 * time.Second)
 			if err != nil {
-				t.Fatalf("Couldn't delete collection. %s", err)
+				t.Fatalf("\tCouldn't delete collection. %s", err)
 			}
 		}
 
-		/*err := os.Remove(TestDB)
+		log.Printf("Destroying %s.", C.Name())
+		err := C.Destroy(true)
 		if err != nil {
-			t.Fatalf("Couldn't deleted test database. %s", err)
-		}*/
+			t.Fatalf("Couldn't delete collection. %s", err)
+		}
 	}
 }
