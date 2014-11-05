@@ -3,8 +3,8 @@ package codec
 import "io"
 
 type Codec interface {
-	NewEncoder(io.Writer) encoder
 	NewDecoder(io.Reader) decoder
+	NewEncoder(io.Writer) encoder
 }
 
 type decoder interface {

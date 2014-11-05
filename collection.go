@@ -34,11 +34,11 @@ func (c *Collection) New() error {
 
 func (c *Collection) Put(key string, data interface{}, unique bool, sync bool) error {
 
-	if len(key) < 1 {
+	if key == "" {
 		return ErrorKeyEmpty
 	}
 
-	if len(c.location) < 1 {
+	if c.location == "" {
 		return ErrorLocationEmpty
 	}
 
