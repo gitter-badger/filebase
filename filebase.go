@@ -33,11 +33,10 @@ func (fb *Filebase) Collection(name string) *Collection {
 	if _, ok := fb.collections[name]; !ok {
 
 		fb.collections[name] = &Collection{
-			location:   path.Join(fb.location, name),
-			codec:      fb.codec,
-			name:       name,
-			perm:       CollectionPerm,
-			objectPerm: ObjectPerm,
+			location: path.Join(fb.location, name),
+			codec:    fb.codec,
+			name:     name,
+			perm:     CollectionPerm,
 		}
 	}
 	return fb.collections[name]
