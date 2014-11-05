@@ -19,6 +19,8 @@ type Collection struct {
 	objects map[string]*Object
 
 	collections map[string]*Collection
+
+	err error //Last error.
 }
 
 func newCollection(location string, name string, codec codec.Codec) *Collection {
@@ -30,11 +32,8 @@ func newCollection(location string, name string, codec codec.Codec) *Collection 
 		collections: make(map[string]*Collection),
 		objects:     make(map[string]*Object),
 	}
-	if err := os.MkdirAll(collection.location, collection.perm); err != nil {
-		//Not returning error here makes chaining possible, but
-		//Panic needs proper recover!
-		panic(err)
-	}
+
+	collection.err = os.MkdirAll(collection.location, collection.perm)
 
 	return &collection
 }
@@ -66,6 +65,10 @@ func (c *Collection) Collection(name string) *Collection {
 
 func (c *Collection) Put(key string, data interface{}, unique bool, sync bool) error {
 
+	if c.err != nil {
+		return c.err
+	}
+
 	if c.location == "" {
 		return ErrorLocationEmpty
 	}
@@ -81,6 +84,10 @@ func (c *Collection) Put(key string, data interface{}, unique bool, sync bool) e
 
 //Get Pull an object from a collection.
 func (c *Collection) Get(key string, out interface{}) error {
+
+	if c.err != nil {
+		return c.err
+	}
 
 	object, ok := c.objects[key]
 	if !ok {

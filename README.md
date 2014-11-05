@@ -15,13 +15,13 @@ Filebase is a filesystem based Key-Object store with plugable codec.
 
 ### Why?
 
-Filebase is ideal when you want more than config files yet not a database. Because Filebase is using filesystem and optionally human readable encoding, you can work with the database with tridtional text editing tools like a GUI texteditor or commandline tools like `cat`,`grep`,`head`, et all, it also means you can selectivly backup your data.
+Filebase is ideal when you want more than config files yet not a database. Because Filebase is using filesystem and optionally human readable encoding, you can work with the database with traditional text editing tools like a GUI texteditor or commandline tools like `cat`,`grep`,`head`, et all, it also means you can selectivly backup your data.
 
 
 
 ### Codecs
 
-Filebase currently currently ships YAML, JSON, and gob codecs.
+Filebase currently ships YAML, JSON, and gob codecs.
 
 To build a new codec, you just need to satisify the `codec.Codec` interface:
 
