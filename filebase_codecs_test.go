@@ -1,6 +1,7 @@
 package filebase
 
 import (
+	"encoding/gob"
 	"reflect"
 	"testing"
 
@@ -13,6 +14,9 @@ type TestObject struct {
 	Key   string
 }
 
+func init() {
+}
+
 var (
 	o = TestObject{"World.",
 		[]string{
@@ -23,11 +27,11 @@ var (
 		"",
 	}
 
-	TestKeys = []string{"key1", "key with space", "key-1", "0key"}
+	TestKeys = []string{"key1", "key with space", "key-1", "0key", "test"}
 
 	TestQuerys = map[string][]string{
 		//May need sorting for this, the order of return depends on system!
-		"*":     []string{"test", "key1", "key with space", "key-1", "0key"},
+		"*":     []string{"key1", "key with space", "key-1", "0key", "test"},
 		"key?":  []string{"key1"},
 		"?key*": []string{"0key"},
 		"k*":    []string{"key1", "key with space", "key-1"},
@@ -37,7 +41,9 @@ var (
 
 func TestWrite(t *testing.T) {
 
-	for _, codec := range []codec.Codec{codec.JSON{}, codec.YAML{}} {
+	gob.Register(TestObject{})
+
+	for _, codec := range []codec.Codec{codec.JSON{}, codec.YAML{}, codec.GOB{}} {
 		fb := New("test-db", codec)
 		codec_name := reflect.TypeOf(codec).Name()
 
@@ -60,7 +66,7 @@ func TestWrite(t *testing.T) {
 				t.Fatal(err)
 			}
 			if !reflect.DeepEqual(keys, expected) {
-				t.Fatalf("\nQuery:    [%+v]\nExpected: %+v, \nGot:      %+v", query, expected, keys)
+				t.Fatalf("\nCodec:   %s\n\nQuery:    [%+v]\nExpected: %+v, \nGot:      %+v", codec_name, query, expected, keys)
 			}
 		}
 	}
