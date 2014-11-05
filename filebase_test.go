@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"log"
 	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/omeid/filebase/codec"
@@ -37,11 +38,10 @@ var (
 	TestKeys = []string{"key1", "key with space", "key-1", "0key", "test"}
 
 	TestQuerys = map[string][]string{
-		//May need sorting for this, the order of return depends on system!
-		"*":     []string{"key1", "key with space", "key-1", "0key", "test"},
+		"*":     []string{"0key", "key with space", "key-1", "key1", "test"},
 		"key?":  []string{"key1"},
 		"?key*": []string{"0key"},
-		"k*":    []string{"key1", "key with space", "key-1"},
+		"k*":    []string{"key with space", "key-1", "key1"},
 		"test":  []string{"test"},
 	}
 )
@@ -82,6 +82,10 @@ func TestAll(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
+
+				//The file order is depedent on OS filesystem.
+				sort.Strings(keys)
+
 				if !reflect.DeepEqual(keys, expected) {
 					t.Fatalf("\nCollec:        %s\nCodec:   %s\n\nQuery:    [%+v]\nExpected: %+v, \nGot:      %+v", c.Name(), codec_name, query, expected, keys)
 				}
