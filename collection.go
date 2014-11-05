@@ -1,7 +1,6 @@
 package filebase
 
 import (
-	"io"
 	"os"
 	"path"
 	"sync"
@@ -35,14 +34,6 @@ func (c *Collection) New() error {
 
 func (c *Collection) Put(key string, data interface{}, unique bool, sync bool) error {
 
-	reader, writer := io.Pipe()
-	if err := c.codec.NewEncoder(writer).Encode(data); err != nil {
-		return err
-	}
-	return c.write(key, reader, unique, sync)
-}
-
-func (c *Collection) write(key string, stream io.Reader, unique bool, sync bool) error {
 	if len(key) < 1 {
 		return ErrorKeyEmpty
 	}
@@ -70,6 +61,6 @@ func (c *Collection) write(key string, stream io.Reader, unique bool, sync bool)
 
 	defer file.Close()
 
-	io.Copy(file, stream)
-	return nil
+	return c.codec.NewEncoder(file).Encode(data)
+
 }
