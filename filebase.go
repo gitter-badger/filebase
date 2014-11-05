@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	ObjectPerm     os.FileMode = 0660
-	CollectionPerm os.FileMode = 0770
+	ObjectPerm     os.FileMode = 0640
+	CollectionPerm os.FileMode = 0750
 )
 
 var (
