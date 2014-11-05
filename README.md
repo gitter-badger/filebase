@@ -1,9 +1,13 @@
 > NOTE: This is a prerelease. The API may change.
 
+[![wercker status](https://app.wercker.com/status/6438ed03b8e2d1655bef928ba1fe88fc/m "wercker status")](https://app.wercker.com/project/bykey/6438ed03b8e2d1655bef928ba1fe88fc)
+
+[![GoDoc](https://godoc.org/github.com/omeid/filebase?status.svg)](https://godoc.org/github.com/omeid/filebase) 
+
+[![Build Status](https://drone.io/github.com/omeid/filebase/status.png)](https://drone.io/github.com/omeid/filebase/latest)
 # Filebase
 
 Version v0.1.0-alpha 
-[![GoDoc](https://godoc.org/github.com/omeid/filebase?status.svg)](https://godoc.org/github.com/omeid/filebase) [![Build Status](https://drone.io/github.com/omeid/filebase/status.png)](https://drone.io/github.com/omeid/filebase/latest)
 
 Filebase is a filesystem based Key-Object store with plugable codec.
 
