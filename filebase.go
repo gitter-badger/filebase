@@ -14,6 +14,7 @@ const (
 
 var (
 	ErrorKeyEmpty      = Error{"Empty Key.", ""}
+	ErrorNotObjectKey  = Error{"Key %s is a collection.", ""}
 	ErrorLocationEmpty = Error{"Location Empty.", ""}
 )
 
@@ -34,10 +35,11 @@ func (fb *Filebase) Collection(name string) *Collection {
 
 	if !ok {
 		fb.collections[name] = &Collection{
-			location: path.Join(fb.location, name),
-			codec:    fb.codec,
-			name:     name,
-			perm:     CollectionPerm,
+			location:    path.Join(fb.location, name),
+			codec:       fb.codec,
+			name:        name,
+			perm:        CollectionPerm,
+			collections: make(map[string]*Collection),
 		}
 		collection = fb.collections[name]
 		//Not returning error here makes chaining possible, but

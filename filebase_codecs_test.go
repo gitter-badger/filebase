@@ -4,14 +4,16 @@ import (
 	"encoding/gob"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/omeid/filebase/codec"
 )
 
 type TestObject struct {
-	Hello string
-	Tag   []string
-	Key   string
+	Hello      string
+	Tag        []string
+	Key        string
+	Collection string
 }
 
 func init() {
@@ -28,6 +30,7 @@ var (
 			"is",
 			"Filebase.",
 		},
+		"",
 		"",
 	}
 
@@ -51,38 +54,47 @@ func TestWrite(t *testing.T) {
 		fb := New(TestDB, codec)
 		codec_name := reflect.TypeOf(codec).Name()
 
-		for _, key := range TestKeys {
+		var (
+			c  = fb.Collection(codec_name)
+			c1 = c.Collection("child")
+			c2 = c1.Collection("grandchild")
+			c3 = c2.Collection("greatgrandchild")
+		)
 
-			o.Key = key
+		for _, c := range []*Collection{c1, c2, c3} {
+			for _, key := range TestKeys {
 
-			fb.Collection(codec_name).Put(key, o, false, false)
-			r := TestObject{}
-			fb.Collection(codec_name).Get(key, &r)
+				o.Key = key
+				o.Collection = c.Name()
 
-			if !reflect.DeepEqual(o, r) {
-				t.Fatalf("\nCodec:    %s\nExpected: %+v, \nGot:      %+v", codec_name, o, r)
+				c.Put(key, o, false, false)
+				r := TestObject{}
+				c.Get(key, &r)
+
+				if !reflect.DeepEqual(o, r) {
+					t.Fatalf("\nCollec:      %s\nCodec:    %s\nExpected: %+v, \nGot:      %+v", c.Name(), codec_name, o, r)
+				}
 			}
-		}
 
-		for query, expected := range TestQuerys {
-			keys, err := fb.Collection(codec_name).Query(query)
-			if err != nil {
-				t.Fatal(err)
+			for query, expected := range TestQuerys {
+				keys, err := c.Query(query)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if !reflect.DeepEqual(keys, expected) {
+					t.Fatalf("\nCollec:        %s\nCodec:   %s\n\nQuery:    [%+v]\nExpected: %+v, \nGot:      %+v", c.Name(), codec_name, query, expected, keys)
+				}
 			}
-			if !reflect.DeepEqual(keys, expected) {
-				t.Fatalf("\nCodec:   %s\n\nQuery:    [%+v]\nExpected: %+v, \nGot:      %+v", codec_name, query, expected, keys)
-			}
-		}
-		/*
-			err := fb.Collection(codec_name).Destroy(true)
+			err := c.Destroy(true)
+			time.Sleep(1 * time.Second)
 			if err != nil {
 				t.Fatalf("Couldn't delete collection. %s", err)
 			}
+		}
 
-			err = os.Remove(TestDB)
-			if err != nil {
-				t.Fatalf("Couldn't deleted test database. %s", err)
-			}
-		*/
+		/*err := os.Remove(TestDB)
+		if err != nil {
+			t.Fatalf("Couldn't deleted test database. %s", err)
+		}*/
 	}
 }

@@ -78,6 +78,14 @@ func (o *Object) Read(codec codec.Codec, out interface{}) (err error) {
 		err = file.Close()
 	}()
 
+	stat, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	if stat.IsDir() {
+		return ErrorNotObjectKey
+	}
+
 	return codec.NewDecoder(file).Decode(out)
 }
 

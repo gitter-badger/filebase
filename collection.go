@@ -17,10 +17,16 @@ type Collection struct {
 	perm os.FileMode
 
 	objects map[string]*Object
+
+	collections map[string]*Collection
 }
 
 func (c *Collection) Ping(create bool) error {
 	return nil
+}
+
+func (c *Collection) Name() string {
+	return c.name
 }
 
 func (c *Collection) Destroy(force bool) error {
@@ -38,6 +44,29 @@ func (c *Collection) New() error {
 	}
 	//We have objects, so the directory should be there already.
 	return nil
+}
+
+func (c *Collection) Collection(name string) *Collection {
+
+	collection, ok := c.collections[name]
+
+	if !ok {
+		c.collections[name] = &Collection{
+			location:    path.Join(c.location, name),
+			codec:       c.codec,
+			name:        name,
+			perm:        CollectionPerm,
+			collections: make(map[string]*Collection),
+		}
+		collection = c.collections[name]
+		//Not returning error here makes chaining possible, but
+		//Panic needs proper recovering!
+		err := collection.New()
+		if err != nil {
+			panic(err)
+		}
+	}
+	return collection
 }
 
 func (c *Collection) Put(key string, data interface{}, unique bool, sync bool) error {
@@ -72,6 +101,14 @@ func (c *Collection) Get(key string, out interface{}) error {
 }
 
 func (c *Collection) Query(filter string) ([]string, error) {
+	return c.query(false, filter)
+}
+
+func (c *Collection) Collections(filter string) ([]string, error) {
+	return c.query(true, filter)
+}
+
+func (c *Collection) query(getCollection bool, filter string) ([]string, error) {
 
 	if c.location == "" {
 		return nil, ErrorLocationEmpty
@@ -97,13 +134,20 @@ func (c *Collection) Query(filter string) ([]string, error) {
 	}
 	defer d.Close()
 
-	files, err := d.Readdirnames(-1)
+	files, err := d.Readdir(-1)
 	if err != nil {
 		return nil, err
 	}
 
 	keys := []string{}
-	for _, key := range files {
+	for _, info := range files {
+
+		if info.IsDir() != getCollection {
+			continue
+		}
+
+		key := info.Name()
+
 		matched, err := filepath.Match(filter, key)
 		if err != nil {
 			return keys, err
