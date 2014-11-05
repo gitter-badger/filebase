@@ -2,6 +2,7 @@ package filebase
 
 import (
 	"encoding/gob"
+	"os"
 	"reflect"
 	"testing"
 
@@ -18,6 +19,10 @@ func init() {
 }
 
 var (
+
+	//Test Database name.
+	TestDB = "test-db"
+
 	o = TestObject{"World.",
 		[]string{
 			"This",
@@ -44,7 +49,7 @@ func TestWrite(t *testing.T) {
 	gob.Register(TestObject{})
 
 	for _, codec := range []codec.Codec{codec.JSON{}, codec.YAML{}, codec.GOB{}} {
-		fb := New("test-db", codec)
+		fb := New(TestDB, codec)
 		codec_name := reflect.TypeOf(codec).Name()
 
 		for _, key := range TestKeys {
@@ -68,6 +73,16 @@ func TestWrite(t *testing.T) {
 			if !reflect.DeepEqual(keys, expected) {
 				t.Fatalf("\nCodec:   %s\n\nQuery:    [%+v]\nExpected: %+v, \nGot:      %+v", codec_name, query, expected, keys)
 			}
+		}
+
+		err := fb.Collection(codec_name).Destroy(true)
+		if err != nil {
+			t.Fatalf("Couldn't delete collection. %s", err)
+		}
+
+		err = os.Remove(TestDB)
+		if err != nil {
+			t.Fatalf("Couldn't deleted test database. %s", err)
 		}
 	}
 }

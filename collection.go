@@ -23,9 +23,12 @@ func (c *Collection) Ping(create bool) error {
 	return nil
 }
 
-func (c *Collection) Destroy() error {
-	//Destruct a collection, i.e delete the directory.
-	return nil
+func (c *Collection) Destroy(force bool) error {
+	if force {
+		return os.RemoveAll(c.location)
+	}
+	return os.Remove(c.location)
+
 }
 
 func (c *Collection) New() error {
