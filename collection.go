@@ -53,3 +53,14 @@ func (c *Collection) Put(key string, data interface{}, unique bool, sync bool) e
 
 	return object.Write(c.codec, data, sync)
 }
+
+//Get Pull an object from a collection.
+func (c *Collection) Get(key string, out interface{}) error {
+
+	object, ok := c.objects[key]
+	if !ok {
+		c.objects[key] = &Object{key: key, location: c.location, perm: ObjectPerm}
+		object = c.objects[key]
+	}
+	return object.Read(c.codec, out)
+}

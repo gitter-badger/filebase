@@ -10,6 +10,14 @@ import (
 
 type YAML struct{}
 
+func (y YAML) NewDecoder(r io.Reader) decoder {
+	return yaml_decoder{r}
+}
+
+func (y YAML) NewEncoder(r io.Writer) encoder {
+	return yaml_encoder{r}
+}
+
 type yaml_decoder struct {
 	r io.Reader
 }
@@ -35,12 +43,4 @@ func (y yaml_encoder) Encode(v interface{}) error {
 	}
 	_, err = bytes.NewBuffer(data).WriteTo(y.w)
 	return err
-}
-
-func (d YAML) NewDecoder(r io.Reader) decoder {
-	return yaml_decoder{r}
-}
-
-func (d YAML) NewEncoder(r io.Writer) encoder {
-	return yaml_encoder{r}
 }

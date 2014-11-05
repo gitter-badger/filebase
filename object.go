@@ -1,10 +1,10 @@
 package filebase
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"sync"
+	"syscall"
 
 	"github.com/omeid/filebase/codec"
 )
@@ -36,10 +36,31 @@ func (o *Object) Write(codec codec.Codec, data interface{}, sync bool) error {
 	if err != nil {
 		return err
 	}
-
-	fmt.Printf("o %+v\n", o)
 	defer file.Close()
 
-	return codec.NewEncoder(file).Encode(data)
+	//Get an exclusive lock on the file.
+	err = syscall.Flock(int(file.Fd()), syscall.LOCK_EX)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
+	}()
 
+	return codec.NewEncoder(file).Encode(data)
+}
+
+func (o *Object) Read(codec codec.Codec, out interface{}) error {
+	if o.key == "" {
+		return ErrorKeyEmpty
+	}
+
+	o.RLock()
+	defer o.RUnlock()
+
+	file, err := os.Open(path.Join(o.location, o.key))
+	if err != nil {
+		return err
+	}
+	return codec.NewDecoder(file).Decode(out)
 }
