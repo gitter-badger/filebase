@@ -80,3 +80,7 @@ func (o *Object) Read(codec codec.Codec, out interface{}) (err error) {
 
 	return codec.NewDecoder(file).Decode(out)
 }
+
+func (o *Object) Destroy() error {
+	return os.Remove(path.Join(o.location, o.key))
+}

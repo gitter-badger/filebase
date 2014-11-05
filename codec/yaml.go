@@ -11,18 +11,19 @@ import (
 type YAML struct{}
 
 func (y YAML) NewDecoder(r io.Reader) decoder {
-	return yaml_decoder{r}
+	return yaml_codec{r: r}
 }
 
-func (y YAML) NewEncoder(r io.Writer) encoder {
-	return yaml_encoder{r}
+func (y YAML) NewEncoder(w io.Writer) encoder {
+	return yaml_codec{w: w}
 }
 
-type yaml_decoder struct {
+type yaml_codec struct {
 	r io.Reader
+	w io.Writer
 }
 
-func (y yaml_decoder) Decode(v interface{}) error {
+func (y yaml_codec) Decode(v interface{}) error {
 
 	data, err := ioutil.ReadAll(y.r)
 	if err != nil {
@@ -31,11 +32,7 @@ func (y yaml_decoder) Decode(v interface{}) error {
 	return yaml.Unmarshal(data, v)
 }
 
-type yaml_encoder struct {
-	w io.Writer
-}
-
-func (y yaml_encoder) Encode(v interface{}) error {
+func (y yaml_codec) Encode(v interface{}) error {
 	data, err := yaml.Marshal(v)
 
 	if err != nil {

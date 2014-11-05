@@ -2,7 +2,6 @@ package filebase
 
 import (
 	"encoding/gob"
-	"os"
 	"reflect"
 	"testing"
 
@@ -27,7 +26,7 @@ var (
 		[]string{
 			"This",
 			"is",
-			"JSON.",
+			"Filebase.",
 		},
 		"",
 	}
@@ -61,7 +60,7 @@ func TestWrite(t *testing.T) {
 			fb.Collection(codec_name).Get(key, &r)
 
 			if !reflect.DeepEqual(o, r) {
-				t.Fatal(o, r)
+				t.Fatalf("\nCodec:    %s\nExpected: %+v, \nGot:      %+v", codec_name, o, r)
 			}
 		}
 
@@ -74,15 +73,16 @@ func TestWrite(t *testing.T) {
 				t.Fatalf("\nCodec:   %s\n\nQuery:    [%+v]\nExpected: %+v, \nGot:      %+v", codec_name, query, expected, keys)
 			}
 		}
+		/*
+			err := fb.Collection(codec_name).Destroy(true)
+			if err != nil {
+				t.Fatalf("Couldn't delete collection. %s", err)
+			}
 
-		err := fb.Collection(codec_name).Destroy(true)
-		if err != nil {
-			t.Fatalf("Couldn't delete collection. %s", err)
-		}
-
-		err = os.Remove(TestDB)
-		if err != nil {
-			t.Fatalf("Couldn't deleted test database. %s", err)
-		}
+			err = os.Remove(TestDB)
+			if err != nil {
+				t.Fatalf("Couldn't deleted test database. %s", err)
+			}
+		*/
 	}
 }
