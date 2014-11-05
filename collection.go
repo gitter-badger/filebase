@@ -2,6 +2,9 @@ package filebase
 
 import (
 	"os"
+	"path"
+	"path/filepath"
+	"strings"
 
 	"github.com/omeid/filebase/codec"
 )
@@ -63,4 +66,48 @@ func (c *Collection) Get(key string, out interface{}) error {
 		object = c.objects[key]
 	}
 	return object.Read(c.codec, out)
+}
+
+func (c *Collection) Query(filter string) ([]string, error) {
+
+	if c.location == "" {
+		return nil, ErrorLocationEmpty
+	}
+
+	path := path.Join(c.location, filter)
+
+	if strings.IndexAny(path, "*?[") < 0 {
+		if _, err := os.Lstat(path); err != nil {
+			return nil, err
+		}
+		return []string{filter}, nil
+	}
+
+	_, err := os.Stat(c.location)
+	if err != nil {
+		return nil, err
+	}
+
+	d, err := os.Open(c.location)
+	if err != nil {
+		return nil, err
+	}
+	defer d.Close()
+
+	files, err := d.Readdirnames(-1)
+	if err != nil {
+		return nil, err
+	}
+
+	keys := []string{}
+	for _, key := range files {
+		matched, err := filepath.Match(filter, key)
+		if err != nil {
+			return keys, err
+		}
+		if matched {
+			keys = append(keys, key)
+		}
+	}
+	return keys, nil
 }

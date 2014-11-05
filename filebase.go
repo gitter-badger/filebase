@@ -30,14 +30,19 @@ type Filebase struct {
 
 func (fb *Filebase) Collection(name string) *Collection {
 
-	if _, ok := fb.collections[name]; !ok {
+	collection, ok := fb.collections[name]
 
+	if !ok {
 		fb.collections[name] = &Collection{
 			location: path.Join(fb.location, name),
 			codec:    fb.codec,
 			name:     name,
 			perm:     CollectionPerm,
 		}
+		collection = fb.collections[name]
+		//Not returning error here makes chaining possible, but
+		//this means all collection methods should be guarded.
+		_ = collection.New()
 	}
-	return fb.collections[name]
+	return collection
 }

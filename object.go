@@ -18,7 +18,7 @@ type Object struct {
 	perm     os.FileMode
 }
 
-func (o *Object) Write(codec codec.Codec, data interface{}, sync bool) error {
+func (o *Object) Write(codec codec.Codec, data interface{}, sync bool) (err error) {
 
 	if o.key == "" {
 		return ErrorKeyEmpty
@@ -36,6 +36,7 @@ func (o *Object) Write(codec codec.Codec, data interface{}, sync bool) error {
 	if err != nil {
 		return err
 	}
+
 	defer file.Close()
 
 	//Get an exclusive lock on the file.
@@ -44,13 +45,24 @@ func (o *Object) Write(codec codec.Codec, data interface{}, sync bool) error {
 		return err
 	}
 	defer func() {
-		syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
+		err = syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
 	}()
+
+	if sync {
+		defer func() {
+			//Don't sync if we have encournted an error.
+			if err == nil {
+				err = file.Sync()
+			}
+		}()
+	}
 
 	return codec.NewEncoder(file).Encode(data)
 }
 
-func (o *Object) Read(codec codec.Codec, out interface{}) error {
+//Read an object from file.
+func (o *Object) Read(codec codec.Codec, out interface{}) (err error) {
+
 	if o.key == "" {
 		return ErrorKeyEmpty
 	}
@@ -62,5 +74,9 @@ func (o *Object) Read(codec codec.Codec, out interface{}) error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		err = file.Close()
+	}()
+
 	return codec.NewDecoder(file).Decode(out)
 }
