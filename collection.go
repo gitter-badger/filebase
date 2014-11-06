@@ -4,6 +4,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/omeid/filebase/codec"
@@ -108,6 +109,16 @@ func (c *Collection) Query(filter string) ([]string, error) {
 type RecursiveResult struct {
 	Objects     []string
 	Collections map[string]RecursiveResult
+}
+
+func (r *RecursiveResult) Sort(deep bool) {
+	sort.Strings(r.Objects)
+	if !deep {
+		return
+	}
+	for _, rr := range r.Collections {
+		rr.Sort(deep)
+	}
 }
 
 func (c *Collection) DeepQuery(collectionFilter string, objectFilter string) (RecursiveResult, error) {
