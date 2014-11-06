@@ -42,6 +42,10 @@ func (c *Collection) Name() string {
 	return c.name
 }
 
+func (c *Collection) Error() error {
+	return c.err
+}
+
 func (c *Collection) Destroy(force bool) error {
 
 	if force {
@@ -99,6 +103,41 @@ func (c *Collection) Get(key string, out interface{}) error {
 
 func (c *Collection) Query(filter string) ([]string, error) {
 	return c.query(false, filter)
+}
+
+type RecursiveResult struct {
+	Objects     []string
+	Collections []RecursiveResult
+}
+
+func (c *Collection) DeepQuery(collectionFilter string, ObjectFilter string) (RecursiveResult, error) {
+	rr := RecursiveResult{}
+	return rr, nil
+}
+
+func deepquery(c *Collection, CollectionFilter string, ObjectFilter string) (RecursiveResult, error) {
+	rr := RecursiveResult{}
+
+	var err error
+	rr.Objects, err = c.Query(ObjectFilter)
+	if err != nil {
+		return rr, err
+	}
+
+	collections, err := c.Collections(CollectionFilter)
+	if err != nil {
+		return rr, err
+	}
+
+	for _, cc := range collections {
+		crr, err := deepquery(c.Collection(cc), CollectionFilter, ObjectFilter)
+		if err != nil {
+			return rr, err
+		}
+		rr.Collections = append(rr.Collections, crr)
+	}
+
+	return rr, nil
 }
 
 func (c *Collection) Collections(filter string) ([]string, error) {
