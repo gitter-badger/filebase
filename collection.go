@@ -102,8 +102,8 @@ func (c *Collection) Get(key string, out interface{}) error {
 	return object.Read(c.codec, out)
 }
 
-func (c *Collection) Query(filter string) ([]string, error) {
-	return c.query(false, filter)
+func (c *Collection) Query(filter string, sort bool) ([]string, error) {
+	return c.query(false, filter, sort)
 }
 
 type RecursiveResult struct {
@@ -112,7 +112,6 @@ type RecursiveResult struct {
 }
 
 func (r *RecursiveResult) Sort(deep bool) {
-	sort.Strings(r.Objects)
 	if !deep {
 		return
 	}
@@ -121,26 +120,26 @@ func (r *RecursiveResult) Sort(deep bool) {
 	}
 }
 
-func (c *Collection) DeepQuery(collectionFilter string, objectFilter string) (RecursiveResult, error) {
-	return deepquery(c, collectionFilter, objectFilter)
+func (c *Collection) DeepQuery(collectionFilter string, objectFilter string, sort bool) (RecursiveResult, error) {
+	return deepquery(c, collectionFilter, objectFilter, sort)
 }
 
-func deepquery(c *Collection, collectionFilter string, objectFilter string) (RecursiveResult, error) {
+func deepquery(c *Collection, collectionFilter string, objectFilter string, sort bool) (RecursiveResult, error) {
 	rr := RecursiveResult{Collections: make(map[string]RecursiveResult)}
 
 	var err error
-	rr.Objects, err = c.Query(objectFilter)
+	rr.Objects, err = c.Query(objectFilter, sort)
 	if err != nil {
 		return rr, err
 	}
 
-	collections, err := c.Collections(collectionFilter)
+	collections, err := c.Collections(collectionFilter, sort)
 	if err != nil {
 		return rr, err
 	}
 
 	for _, cc := range collections {
-		rr.Collections[cc], err = deepquery(c.Collection(cc), collectionFilter, objectFilter)
+		rr.Collections[cc], err = deepquery(c.Collection(cc), collectionFilter, objectFilter, sort)
 		if err != nil {
 			return rr, err
 		}
@@ -149,11 +148,11 @@ func deepquery(c *Collection, collectionFilter string, objectFilter string) (Rec
 	return rr, nil
 }
 
-func (c *Collection) Collections(filter string) ([]string, error) {
-	return c.query(true, filter)
+func (c *Collection) Collections(filter string, sort bool) ([]string, error) {
+	return c.query(true, filter, sort)
 }
 
-func (c *Collection) query(getCollection bool, filter string) ([]string, error) {
+func (c *Collection) query(getCollection bool, filter string, sorted bool) ([]string, error) {
 
 	if c.location == "" {
 		return nil, ErrorLocationEmpty
@@ -200,6 +199,10 @@ func (c *Collection) query(getCollection bool, filter string) ([]string, error) 
 		if matched {
 			keys = append(keys, key)
 		}
+	}
+
+	if sorted {
+		sort.Strings(keys)
 	}
 	return keys, nil
 }

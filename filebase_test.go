@@ -2,7 +2,6 @@ package filebase
 
 import (
 	"reflect"
-	"sort"
 	"testing"
 
 	"github.com/omeid/filebase/codec"
@@ -72,13 +71,10 @@ func _testKeys(c *Collection, t *testing.T) {
 func _testQuery(c *Collection, t *testing.T) {
 	codec_name := reflect.TypeOf(c.codec).Name()
 	for query, expected := range TestQuerys {
-		keys, err := c.Query(query)
+		keys, err := c.Query(query, true)
 		if err != nil {
 			t.Fatal(err)
 		}
-
-		//The file order is depedent on OS filesystem.
-		sort.Strings(keys)
 
 		if !reflect.DeepEqual(keys, expected) {
 			t.Fatalf("\nCollec:        %s\nCodec:   %s\n\nQuery:    [%+v]\nExpected: %+v, \nGot:      %+v", c.Name(), codec_name, query, expected, keys)
@@ -89,13 +85,10 @@ func _testQuery(c *Collection, t *testing.T) {
 func _testDeepQuery(c *Collection, t *testing.T) {
 	codec_name := reflect.TypeOf(c.codec).Name()
 	for query, expected := range TestDeepQuerys {
-		result, err := c.DeepQuery(query.Collection, query.Object)
+		result, err := c.DeepQuery(query.Collection, query.Object, true)
 		if err != nil {
 			t.Fatal(err)
 		}
-
-		//The file order is depedent on OS filesystem. Maybe I should loop here.
-		result.Sort(true)
 
 		if !reflect.DeepEqual(result, expected) {
 			t.Fatalf("\nCollec:        %s\nCodec:   %s\n\nQuery:    [%+v]\nExpected: %+v, \nGot:      %+v", c.Name(), codec_name, query, expected, result)
