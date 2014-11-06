@@ -107,34 +107,32 @@ func (c *Collection) Query(filter string) ([]string, error) {
 
 type RecursiveResult struct {
 	Objects     []string
-	Collections []RecursiveResult
+	Collections map[string]RecursiveResult
 }
 
-func (c *Collection) DeepQuery(collectionFilter string, ObjectFilter string) (RecursiveResult, error) {
-	rr := RecursiveResult{}
-	return rr, nil
+func (c *Collection) DeepQuery(collectionFilter string, objectFilter string) (RecursiveResult, error) {
+	return deepquery(c, collectionFilter, objectFilter)
 }
 
-func deepquery(c *Collection, CollectionFilter string, ObjectFilter string) (RecursiveResult, error) {
-	rr := RecursiveResult{}
+func deepquery(c *Collection, collectionFilter string, objectFilter string) (RecursiveResult, error) {
+	rr := RecursiveResult{Collections: make(map[string]RecursiveResult)}
 
 	var err error
-	rr.Objects, err = c.Query(ObjectFilter)
+	rr.Objects, err = c.Query(objectFilter)
 	if err != nil {
 		return rr, err
 	}
 
-	collections, err := c.Collections(CollectionFilter)
+	collections, err := c.Collections(collectionFilter)
 	if err != nil {
 		return rr, err
 	}
 
 	for _, cc := range collections {
-		crr, err := deepquery(c.Collection(cc), CollectionFilter, ObjectFilter)
+		rr.Collections[cc], err = deepquery(c.Collection(cc), collectionFilter, objectFilter)
 		if err != nil {
 			return rr, err
 		}
-		rr.Collections = append(rr.Collections, crr)
 	}
 
 	return rr, nil
@@ -154,7 +152,7 @@ func (c *Collection) query(getCollection bool, filter string) ([]string, error) 
 
 	if strings.IndexAny(path, "*?[") < 0 {
 		if _, err := os.Lstat(path); err != nil {
-			return nil, err
+			return nil, nil
 		}
 		return []string{filter}, nil
 	}
