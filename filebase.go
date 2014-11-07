@@ -12,6 +12,9 @@ const (
 	BucketPerm os.FileMode = 0750
 )
 
+// You should expect the following errors.
+// the fault is an error type so you should
+// treat them like so.
 var (
 	ErrorKeyEmpty      = fault{"Empty Key.", ""}
 	ErrorNotObjectKey  = fault{"Key %s is a bucket.", ""}
