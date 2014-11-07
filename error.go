@@ -2,17 +2,18 @@ package filebase
 
 import "fmt"
 
-type Error struct {
+// `fault, because `error` is  type.
+type fault struct {
 	Err      string
 	Detailed string
 }
 
-func (e *Error) Fault(details ...interface{}) *Error {
+func (e *fault) Fault(details ...interface{}) *fault {
 	e.Detailed = fmt.Sprintf(e.Err, details...)
 	return e
 }
 
-func (e Error) Error() string {
+func (e fault) Error() string {
 	if e.Detailed != "" {
 		return e.Detailed
 	}
