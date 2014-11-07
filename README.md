@@ -1,11 +1,6 @@
 > NOTE: This is a prerelease. The API may change.
 
-[![wercker status](https://app.wercker.com/status/6438ed03b8e2d1655bef928ba1fe88fc/m "wercker status")](https://app.wercker.com/project/bykey/6438ed03b8e2d1655bef928ba1fe88fc)
-
-[![GoDoc](https://godoc.org/github.com/omeid/filebase?status.svg)](https://godoc.org/github.com/omeid/filebase) 
-
-[![Build Status](https://drone.io/github.com/omeid/filebase/status.png)](https://drone.io/github.com/omeid/filebase/latest)
-# Filebase
+# Filebase [![wercker status](https://app.wercker.com/status/6438ed03b8e2d1655bef928ba1fe88fc/s "wercker status")](https://app.wercker.com/project/bykey/6438ed03b8e2d1655bef928ba1fe88fc) [![GoDoc](https://godoc.org/github.com/omeid/filebase?status.svg)](https://godoc.org/github.com/omeid/filebase) [![Build Status](https://drone.io/github.com/omeid/filebase/status.png)](https://drone.io/github.com/omeid/filebase/latest)
 
 Version v0.1.0-alpha 
 
@@ -41,9 +36,11 @@ type encoder interface {
 }
 ```
 
-### Collection & Objects
+### Bucket & Objects
 
-Filebase has no concept of table or database, it is collections and objects, and collection may have any number of object or collection to the limits supported by the underlying file system.
+Filebase has no concept of table or database, it is buckets and objects. A bucket may have any number of object and bucket to the limits supported by the underlying file system.
+
+Please refer to the godocs for more informaiton and see the [test](filebase_test.go)
 
 
 ### TODO:

@@ -8,15 +8,15 @@ import (
 )
 
 type TestObject struct {
-	Hello      string
-	Tag        []string
-	Key        string
-	Collection string
+	Hello  string
+	Tag    []string
+	Key    string
+	Bucket string
 }
 
 type DeepQuery struct {
-	Collection string
-	Object     string
+	Bucket string
+	Object string
 }
 
 var (
@@ -45,18 +45,18 @@ var (
 		"test":  []string{"test"},
 	}
 
-	TestDeepQuerys = map[DeepQuery]RecursiveResult{
-		DeepQuery{"*", "*"}: RecursiveResult{[]string{"0key", "key with space", "key-1", "key1", "test"}, make(map[string]RecursiveResult)},
+	TestDeepQuerys = map[DeepQuery]Result{
+		DeepQuery{"*", "*"}: Result{[]string{"0key", "key with space", "key-1", "key1", "test"}, make(map[string]Result)},
 	}
 )
 
-func _testKeys(c *Collection, t *testing.T) {
+func _testKeys(c *Bucket, t *testing.T) {
 
 	codec_name := reflect.TypeOf(c.codec).Name()
 	for _, key := range TestKeys {
 
 		o.Key = key
-		o.Collection = codec_name
+		o.Bucket = codec_name
 
 		c.Put(key, o, false, false)
 		r := TestObject{}
@@ -68,10 +68,10 @@ func _testKeys(c *Collection, t *testing.T) {
 	}
 }
 
-func _testQuery(c *Collection, t *testing.T) {
+func _testQuery(c *Bucket, t *testing.T) {
 	codec_name := reflect.TypeOf(c.codec).Name()
 	for query, expected := range TestQuerys {
-		keys, err := c.Query(query, true)
+		keys, err := c.Objects(query, true)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -82,10 +82,10 @@ func _testQuery(c *Collection, t *testing.T) {
 	}
 }
 
-func _testDeepQuery(c *Collection, t *testing.T) {
+func _testDeepQuery(c *Bucket, t *testing.T) {
 	codec_name := reflect.TypeOf(c.codec).Name()
 	for query, expected := range TestDeepQuerys {
-		result, err := c.DeepQuery(query.Collection, query.Object, true)
+		result, err := c.Query(query.Bucket, query.Object, true)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -105,11 +105,11 @@ func TestCodecs(t *testing.T) {
 	}
 }
 
-func TestSubCollections(t *testing.T) {
+func TestSubBuckets(t *testing.T) {
 
 	c := New(TestDB, codec.JSON{})
 	for _, name := range []string{"child", "grandchild", "greatgrandchild"} {
-		c = c.Collection(name)
+		c = c.Bucket(name)
 		_testKeys(c, t)
 		_testQuery(c, t)
 	}

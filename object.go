@@ -9,7 +9,7 @@ import (
 	"github.com/omeid/filebase/codec"
 )
 
-type Object struct {
+type object struct {
 	sync.RWMutex
 
 	location string
@@ -18,7 +18,7 @@ type Object struct {
 	perm     os.FileMode
 }
 
-func (o *Object) Write(codec codec.Codec, data interface{}, sync bool) (err error) {
+func (o *object) Write(codec codec.Codec, data interface{}, sync bool) (err error) {
 
 	if o.key == "" {
 		return ErrorKeyEmpty
@@ -61,7 +61,7 @@ func (o *Object) Write(codec codec.Codec, data interface{}, sync bool) (err erro
 }
 
 //Read an object from file.
-func (o *Object) Read(codec codec.Codec, out interface{}) (err error) {
+func (o *object) Read(codec codec.Codec, out interface{}) (err error) {
 
 	if o.key == "" {
 		return ErrorKeyEmpty
@@ -89,7 +89,7 @@ func (o *Object) Read(codec codec.Codec, out interface{}) (err error) {
 	return codec.NewDecoder(file).Decode(out)
 }
 
-func (o *Object) Destroy() error {
+func (o *object) Destroy() error {
 
 	o.Lock()
 	defer o.Unlock()

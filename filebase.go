@@ -9,16 +9,16 @@ import (
 
 const (
 	ObjectPerm     os.FileMode = 0640
-	CollectionPerm os.FileMode = 0750
+	BucketPerm os.FileMode = 0750
 )
 
 var (
 	ErrorKeyEmpty      = Error{"Empty Key.", ""}
-	ErrorNotObjectKey  = Error{"Key %s is a collection.", ""}
+	ErrorNotObjectKey  = Error{"Key %s is a bucket.", ""}
 	ErrorLocationEmpty = Error{"Location Empty.", ""}
 )
 
-func New(location string, codec codec.Codec) *Collection {
+func New(location string, codec codec.Codec) *Bucket {
 	location, name := path.Split(location)
-	return newCollection(location, name, codec)
+	return newBucket(location, name, codec)
 }
