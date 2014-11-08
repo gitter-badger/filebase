@@ -10,11 +10,11 @@ import (
 
 type YAML struct{}
 
-func (y YAML) NewDecoder(r io.Reader) decoder {
+func (y YAML) NewDecoder(r io.Reader) Decoder {
 	return yaml_codec{r: r}
 }
 
-func (y YAML) NewEncoder(w io.Writer) encoder {
+func (y YAML) NewEncoder(w io.Writer) Encoder {
 	return yaml_codec{w: w}
 }
 

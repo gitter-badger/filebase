@@ -9,10 +9,10 @@ import (
 
 type GOB struct{}
 
-func (g GOB) NewDecoder(r io.Reader) decoder {
+func (g GOB) NewDecoder(r io.Reader) Decoder {
 	return gob.NewDecoder(r)
 }
 
-func (g GOB) NewEncoder(r io.Writer) encoder {
+func (g GOB) NewEncoder(r io.Writer) Encoder {
 	return gob.NewEncoder(r)
 }
